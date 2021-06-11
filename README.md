@@ -19,7 +19,7 @@ Vagrant-это инструмент для создания и управлен�
 
 ```sh
 $ export GITHUB_USERNAME= пишу свое имя пользователя
-$ export PACKAGE_MANAGER= пишу свой пакадж менетджер
+$ export PACKAGE_MANAGER= пишу свой пакетный менетджер
 ```
 
 ```sh
@@ -117,7 +117,12 @@ $ vagrant status ##проверка статуса
 
 $ vagrant up # --provider virtualbox ##запуск виртуальной машины
 $ vagrant port ##просмотр порта
+    
+    22 (guest) => 2222 (host)
+    80 (guest) => 8080 (host)
+
 $ vagrant status
+
 $ vagrant ssh ##подключение к виртуальной машине через ssh
 
 $ vagrant snapshot list ##просмотр снимков виртуальных машин
@@ -147,6 +152,15 @@ $ vagrant snapshot pop ##открытие снимка виртуальной м
 
 ```sh
 $ vagrant plugin install vagrant-vmware-esxi ##установка плагина vmware
+
+Installing the 'vagrant-vmware-esxi' plugin. This can take a few minutes...
+Fetching iniparse-1.5.0.gem
+Fetching racc-1.5.2.gem
+Building native extensions. This could take a while...
+Fetching nokogiri-1.11.7-x86_64-linux.gem
+Fetching vagrant-vmware-esxi-2.5.2.gem
+
+
 $ vagrant plugin list ##просмотр плагинов
 
 vagrant-global-status (0.1.4, global)
