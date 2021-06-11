@@ -111,7 +111,10 @@ EOF
 # проверка корректности файла Vagrantfile
 $ vagrant validate ##валидация
 
+Vagrantfile validated successfully.
+
 $ vagrant status ##проверка статуса
+
 $ vagrant up # --provider virtualbox ##запуск виртуальной машины
 $ vagrant port ##просмотр порта
 $ vagrant status
@@ -145,6 +148,11 @@ $ vagrant snapshot pop ##открытие снимка виртуальной м
 ```sh
 $ vagrant plugin install vagrant-vmware-esxi ##установка плагина vmware
 $ vagrant plugin list ##просмотр плагинов
+
+vagrant-global-status (0.1.4, global)
+vagrant-vbguest (0.30.0, global)
+vagrant-vmware-esxi (2.5.2, global)
+
 $ vagrant up --provider=vmware_esxi ##запуск виртуальной машины с указанием провайдера
 ```
 
