@@ -3,15 +3,11 @@
 
 Данная лабораторная работа посвещена изучению процесса создания и конфигурирования виртуальной среды разработки с использованием **Vagrant**
 
-**Vagrant** is a tool for building and managing virtual machine environments in a single workflow. With an easy-to-use workflow and focus on automation, Vagrant lowers development environment setup time, increases production parity, and makes the "works on my machine" excuse a relic of the past.
-Что переводится как:
-**Vagrant**- это инструмент для создания и управления средами виртуальных машин в рамках одного рабочего процесса. Благодаря простому в использовании рабочему процессу и сосредоточенности на автоматизации, Vagrant сокращает время настройки среды разработки, увеличивает четность производства.
-**Vagrant** предоставляет простую в настройке, воспроизводимую и портативную рабочую среду, построенную на основе стандартных отраслевых технологий и управляемую единым согласованным рабочим процессом, чтобы помочь максимизировать производительность и гибкость людей, который работают в команде.
-** Все члены  команды выполняют код в одной и той же среде, с одинаковыми зависимостями, все настроены одинаково. Не будет такой ошибки, как "работает на моей машине".
-
 ```sh
 $ open https://www.vagrantup.com/intro/index.html
 ```
+Определение: 
+Vagrant-это инструмент для создания и управления средами виртуальных машин в рамках одного рабочего процесса. Благодаря простому в использовании рабочему процессу и сосредоточенности на автоматизации, Vagrant сокращает время настройки среды разработки, увеличивает четность производства и делает оправдание "работы на моей машине" пережитком прошлого.
 
 ## Tasks
 
@@ -19,38 +15,52 @@ $ open https://www.vagrantup.com/intro/index.html
 - [x] 2. Выполнить инструкцию учебного материала
 - [x] 3. Составить отчет и отправить ссылку личным сообщением в **Slack**
 
-## Tutorial
-1 Устанавливаем значение переменных окружения
-2 Указываем имя пользователя Github
-3 Указываем используемый пакетный менеджер (apt)
+
+
 ```sh
-$ export GITHUB_USERNAME=<имя_пользователя>
-$ export PACKAGE_MANAGER=<пакетный_менеджер>
+$ export GITHUB_USERNAME= пишу свое имя пользователя
+$ export PACKAGE_MANAGER= пишу свой пакадж менетджер
 ```
-4 Переходим в рабочую директорию
-5 Устанавливаем vagrant
+
 ```sh
 $ cd ${GITHUB_USERNAME}/workspace
-$ ${PACKAGE_MANAGER} install vagrant
+$ ${PACKAGE_MANAGER} install vagrant ##установка vagrant из менеджера пакетов
 ```
-6 Выводим версию скаченного vagrant
-7 Создаем новую виртуальную машину
-8 Выводим содержимое Vagrantfile
 
 ```sh
 $ vagrant version
-$ vagrant init bento/ubuntu-19.10
-$ less Vagrantfile
+
+Installed Version: 2.2.6
+
+Vagrant was unable to check for the latest version of Vagrant.
+Please check manually at https://www.vagrantup.com
+
+
+$ vagrant init bento/ubuntu-19.10 ##инициализация виртуальной машины на ubuntu
+
+ `Vagrantfile` has been placed in this directory. You are now
+ready to `vagrant up` your first virtual environment! Please read
+the comments in the Vagrantfile as well as documentation on
+`vagrantup.com` for more information on using Vagrant.
+
+
+
+$ less Vagrantfile ##сгенерируется файл настроек виртуальной машины
+Создаем новый Vagrantfile, перезаписываем изначальный (флаг -f), находящийся в текущем пути. Причем информация в нем будет в минимальном объеме (флаг -m)
 $ vagrant init -f -m bento/ubuntu-19.10
+
+A `Vagrantfile` has been placed in this directory. You are now
+ready to `vagrant up` your first virtual environment! Please read
+the comments in the Vagrantfile as well as documentation on
+`vagrantup.com` for more information on using Vagrant.
 ```
-9 Создаем директорию shared
 
 ```sh
 $ mkdir shared
 ```
-10 В файл Vagrantfile записываем комманды для запуска скрипта 
+
 ```sh
-$ cat > Vagrantfile <<EOF
+$ cat > Vagrantfile <<EOF ##добавление конфигурации
 \$script = <<-SCRIPT
 sudo apt install docker.io -y
 sudo docker pull fastide/ubuntu:19.04
@@ -63,9 +73,11 @@ sudo chown -R developer /home/developer
 SCRIPT
 EOF
 ```
-11 В файл Vagrantfile записываем конфигурацию для виртуальной машины
- vagrant-vbguest - это плагин, который автоматически обновляет гостевые дополнения VirtualBox
+
 ```sh
+# В файл Vagrantfile записываем конфигурацию для виртуальной машины
+# vagrant-vbguest - это плагин, который автоматически обновляет гостевые дополнения VirtualBox
+
 $ cat >> Vagrantfile <<EOF
 
 Vagrant.configure("2") do |config|
@@ -73,53 +85,45 @@ Vagrant.configure("2") do |config|
   config.vagrant.plugins = ["vagrant-vbguest"]
 EOF
 ```
-12 Продолжаем конфигурацию для виртуальной машины
+
 ```sh
+# Продолжаем конфигурацию для виртуальной машины:
 $ cat >> Vagrantfile <<EOF
 
-  config.vm.box = "bento/ubuntu-19.10"
-  config.vm.network "public_network"
-  config.vm.synced_folder('shared', '/vagrant', type: 'rsync')
+  config.vm.box = "bento/ubuntu-19.10"                              # Указываем версию виртуальной машины: ubuntu-19.10
+  config.vm.network "public_network"                                # Указываем настройки сети: public_network
+  config.vm.synced_folder('shared', '/vagrant', type: 'rsync')      # Указываем связующие директории: 'shared', '/vagrant', type: 'rsync'
 
-  config.vm.provider "virtualbox" do |vb|
-    vb.gui = true
-    vb.memory = "2048"
+  config.vm.provider "virtualbox" do |vb|                           # Указываем тип виртуальной машины: virtualbox
+    vb.gui = true                                                   # Указываем, что используется графический интерфейс: vb.gui = true 
+    vb.memory = "2048"                                              # Указываем, сколько выделяем оперативной памяти под виртуальную машину: 2048МБ 
   end
 
-  config.vm.provision "shell", inline: \$script, privileged: true
+  config.vm.provision "shell", inline: \$script, privileged: true   # config.vm.provision "shell" - задает встроенную команду оболочки для выполнения на удаленном компьютере
 
-  config.ssh.extra_args = "-tt"
+  config.ssh.extra_args = "-tt"                                     # config.ssh.extra_args - значение настроек передается непосредственно в исполняемый файл ssh#
 
 end
 EOF
 ```
-13 Выполняем команду для устронения неполадок
-"vagrant plugin install vagrant-vbguest"
-14 vagrant validate - проверка корректности файла Vagrantfile
-15 Просмотрим список вируальных машин и их статусы
-16 Запуск виртуальной машины 
-17 информация о проброске портов
-18 подключение по ssh к запущенной виртуальной машине
-19 посмотреть список сохранённых состояний виртальной машины
-20 остановить виртуальную машину
-21 востановить состояние виртуальной машины по снимку
 
 ```sh
-$ vagrant validate
+# проверка корректности файла Vagrantfile
+$ vagrant validate ##валидация
 
+$ vagrant status ##проверка статуса
+$ vagrant up # --provider virtualbox ##запуск виртуальной машины
+$ vagrant port ##просмотр порта
 $ vagrant status
-$ vagrant up # --provider virtualbox
-$ vagrant port
-$ vagrant status
-$ vagrant ssh
+$ vagrant ssh ##подключение к виртуальной машине через ssh
 
+$ vagrant snapshot list ##просмотр снимков виртуальных машин
+$ vagrant snapshot push ##добавление снимка виртуальной машины
 $ vagrant snapshot list
-$ vagrant snapshot push
-$ vagrant snapshot list
-$ vagrant halt
-$ vagrant snapshot pop
+$ vagrant halt ##выключение виртуальной машины
+$ vagrant snapshot pop ##открытие снимка виртуальной машины
 ```
-22 настраиваем Vagrant для работы с VMware
+
 ```ruby
   config.vm.provider :vmware_esxi do |esxi|
 
@@ -139,9 +143,22 @@ $ vagrant snapshot pop
 ```
 
 ```sh
-$ vagrant plugin install vagrant-vmware-esxi
-$ vagrant plugin list
-$ vagrant up --provider=vmware_esxi
+$ vagrant plugin install vagrant-vmware-esxi ##установка плагина vmware
+$ vagrant plugin list ##просмотр плагинов
+$ vagrant up --provider=vmware_esxi ##запуск виртуальной машины с указанием провайдера
+```
+
+## Report
+
+```sh
+$ cd ~/workspace/
+$ export LAB_NUMBER=10
+$ git clone https://github.com/tp-labs/lab${LAB_NUMBER}.git tasks/lab${LAB_NUMBER}
+$ mkdir reports/lab${LAB_NUMBER}
+$ cp tasks/lab${LAB_NUMBER}/README.md reports/lab${LAB_NUMBER}/REPORT.md
+$ cd reports/lab${LAB_NUMBER}
+$ edit REPORT.md
+$ gist REPORT.md
 ```
 
 ## Links
@@ -154,4 +171,3 @@ $ vagrant up --provider=vmware_esxi
 
 ```
 Copyright (c) 2015-2021 The ISC Authors
-```
