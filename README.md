@@ -1,138 +1,157 @@
 # lab10
 
-```sh
-$ export GITHUB_TOKEN=
-$ export GITHUB_USERNAME=
-$ export PACKAGE_MANAGER=apt
-$ export GPG_PACKAGE_NAME=gpg
-```
+
+Данная лабораторная работа посвещена изучению процесса создания и конфигурирования виртуальной среды разработки с использованием **Vagrant**
+
+**Vagrant** is a tool for building and managing virtual machine environments in a single workflow. With an easy-to-use workflow and focus on automation, Vagrant lowers development environment setup time, increases production parity, and makes the "works on my machine" excuse a relic of the past.
+Что переводится как:
+**Vagrant**- это инструмент для создания и управления средами виртуальных машин в рамках одного рабочего процесса. Благодаря простому в использовании рабочему процессу и сосредоточенности на автоматизации, Vagrant сокращает время настройки среды разработки, увеличивает четность производства.
+**Vagrant** предоставляет простую в настройке, воспроизводимую и портативную рабочую среду, построенную на основе стандартных отраслевых технологий и управляемую единым согласованным рабочим процессом, чтобы помочь максимизировать производительность и гибкость людей, который работают в команде.
+** Все члены  команды выполняют код в одной и той же среде, с одинаковыми зависимостями, все настроены одинаково. Не будет такой ошибки, как "работает на моей машине".
 
 ```sh
-$ $PACKAGE_MANAGER install xclip #Устанавливаем утилиту xclip, предоставляющую доступ к буферу обмена Х из коммандной строки
-$ alias gsed=sed
-$ alias pbcopy='xclip -selection clipboard'
-$ alias pbpaste='xclip -selection clipboard -o'
+$ open https://www.vagrantup.com/intro/index.html
 ```
 
+## Tasks
+
+- [x] 1. Ознакомиться со ссылками учебного материала
+- [x] 2. Выполнить инструкцию учебного материала
+- [x] 3. Составить отчет и отправить ссылку личным сообщением в **Slack**
+
+## Tutorial
+1 Устанавливаем значение переменных окружения
+2 Указываем имя пользователя Github
+3 Указываем используемый пакетный менеджер (apt)
 ```sh
-# Скачивание и установка пакета Go, для работы с релизами Github
+$ export GITHUB_USERNAME=<имя_пользователя>
+$ export PACKAGE_MANAGER=<пакетный_менеджер>
+```
+4 Переходим в рабочую директорию
+5 Устанавливаем vagrant
+```sh
 $ cd ${GITHUB_USERNAME}/workspace
-$ pushd . 
-$ source scripts/activate
-$ go get github.com/aktau/github-release
+$ ${PACKAGE_MANAGER} install vagrant
+```
+6 Выводим версию скаченного vagrant
+7 Создаем новую виртуальную машину
+8 Выводим содержимое Vagrantfile
+
+```sh
+$ vagrant version
+$ vagrant init bento/ubuntu-19.10
+$ less Vagrantfile
+$ vagrant init -f -m bento/ubuntu-19.10
+```
+9 Создаем директорию shared
+
+```sh
+$ mkdir shared
+```
+10 В файл Vagrantfile записываем комманды для запуска скрипта 
+```sh
+$ cat > Vagrantfile <<EOF
+\$script = <<-SCRIPT
+sudo apt install docker.io -y
+sudo docker pull fastide/ubuntu:19.04
+sudo docker create -ti --name fastide fastide/ubuntu:19.04 bash
+sudo docker cp fastide:/home/developer /home/
+sudo useradd developer
+sudo usermod -aG sudo developer
+echo "developer:developer" | sudo chpasswd
+sudo chown -R developer /home/developer
+SCRIPT
+EOF
+```
+11 В файл Vagrantfile записываем конфигурацию для виртуальной машины
+ vagrant-vbguest - это плагин, который автоматически обновляет гостевые дополнения VirtualBox
+```sh
+$ cat >> Vagrantfile <<EOF
+
+Vagrant.configure("2") do |config|
+
+  config.vagrant.plugins = ["vagrant-vbguest"]
+EOF
+```
+12 Продолжаем конфигурацию для виртуальной машины
+```sh
+$ cat >> Vagrantfile <<EOF
+
+  config.vm.box = "bento/ubuntu-19.10"
+  config.vm.network "public_network"
+  config.vm.synced_folder('shared', '/vagrant', type: 'rsync')
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+    vb.memory = "2048"
+  end
+
+  config.vm.provision "shell", inline: \$script, privileged: true
+
+  config.ssh.extra_args = "-tt"
+
+end
+EOF
+```
+13 Выполняем команду для устронения неполадок
+"vagrant plugin install vagrant-vbguest"
+14 vagrant validate - проверка корректности файла Vagrantfile
+15 Просмотрим список вируальных машин и их статусы
+16 Запуск виртуальной машины 
+17 информация о проброске портов
+18 подключение по ssh к запущенной виртуальной машине
+19 посмотреть список сохранённых состояний виртальной машины
+20 остановить виртуальную машину
+21 востановить состояние виртуальной машины по снимку
+
+```sh
+$ vagrant validate
+
+$ vagrant status
+$ vagrant up # --provider virtualbox
+$ vagrant port
+$ vagrant status
+$ vagrant ssh
+
+$ vagrant snapshot list
+$ vagrant snapshot push
+$ vagrant snapshot list
+$ vagrant halt
+$ vagrant snapshot pop
+```
+22 настраиваем Vagrant для работы с VMware
+```ruby
+  config.vm.provider :vmware_esxi do |esxi|
+
+    esxi.esxi_hostname = '<exsi_hostname>'
+    esxi.esxi_username = 'root'
+    esxi.esxi_password = 'prompt:'
+
+    esxi.esxi_hostport = 22
+
+    esxi.guest_name = '${GITHUB_USERNAME}'
+
+    esxi.guest_username = 'vagrant'
+    esxi.guest_memsize = '2048'
+    esxi.guest_numvcpus = '2'
+    esxi.guest_disk_type = 'thin'
+  end
 ```
 
 ```sh
-$ git clone https://github.com/${GITHUB_USERNAME}/lab09 projects/lab09
-$ cd projects/lab09
-$ git remote remove origin
-$ git remote add origin https://github.com/${GITHUB_USERNAME}/lab09
+$ vagrant plugin install vagrant-vmware-esxi
+$ vagrant plugin list
+$ vagrant up --provider=vmware_esxi
 ```
 
-```sh
-$ gsed -i 's/lab08/lab09/g' README.md
-```
+## Links
 
-Устанавливаем GPG (утилиту для шифрования) и создаем новый секретный ключ
-```sh
-$ $PACKAGE_MANAGER install ${GPG_PACKAGE_NAME}
-$ gpg --list-secret-keys --keyid-format LONG
-$ gpg --full-generate-key
-#Вводим секретный ключ
-$ gpg --list-secret-keys --keyid-format LONG
-$ gpg -K ${GITHUB_USERNAME}
-# Сохраняем перменную с публичным ключом
-$ GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep ssb | tail -1 | awk '{print $2}' | awk -F'/' '{print $2}')
-# Сохраняем переменную с секретным ключом
-$ GPG_SEC_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep sec | tail -1 | awk '{print $2}' | awk -F'/' '{print $2}')
-# Выводим ключ в ASCII и копируем его в буфер обмена
-$ gpg --armor --export ${GPG_KEY_ID} | pbcopy
-$ pbpaste
-# Вводим ключ в гитхабе
-$ open https://github.com/settings/keys
-$ git config user.signingkey ${GPG_SEC_KEY_ID}
-$ git config gpg.program gpg
-```
-
-```sh
-# Настраиваем скрипт для добавления сообщения к тегу
-$ test -r ~/.bash_profile && echo 'export GPG_TTY=$(tty)' >> ~/.bash_profile
-$ echo 'export GPG_TTY=$(tty)' >> ~/.profile
-```
-
-```sh
-$ cmake -H. -B_build -DCPACK_GENERATOR="TGZ"
-$ cmake --build _build --target package
-```
-
-```sh
-$ travis login --github-token (token)
-$ travis enable
-```
-
-```sh
-# Создание тега с сообщением с информацией а затем вервефеируем его
-$ git tag -s v0.1.0.0
-$ git tag -v v0.1.0.0
-# Смотрим на изменения
-$ git show v0.1.0.0
-# Пушим
-$ git push origin main --tags
-```
-Гитхаб релиз не сразу определялся как команда, но помог туториал с сайта https://www.digitalocean.com/community/tutorials/how-to-install-go-and-set-up-a-local-programming-environment-on-ubuntu-18-04-ru
-
-а именно в файле ~/.profile
-дописать 
-
-export GOPATH=$HOME/go
-
-export PATH=$PATH:$GOPATH/bin
-
-export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
-
-Создаем и заполняем релиз
-```sh
-$ github-release --version
-$ github-release info -u ${GITHUB_USERNAME} -r lab09
-$ github-release release \
-    --user ${GITHUB_USERNAME} \
-    --repo lab09 \
-    --tag v0.1.0.0 \
-    --name "libprint" \
-    --description "my first release"
-```
-
-```sh
-# Дополнительно указываем ОС и архитектуру
-$ export PACKAGE_OS=`uname -s` PACKAGE_ARCH=`uname -m` 
-$ export PACKAGE_FILENAME=print-${PACKAGE_OS}-${PACKAGE_ARCH}.tar.gz
-$ github-release upload \
-    --user ${GITHUB_USERNAME} \
-    --repo lab09 \
-    --tag v0.1.0.0 \
-    --name "${PACKAGE_FILENAME}" \
-    --file _build/*.tar.gz
-```
-
-```sh
-$ github-release info -u ${GITHUB_USERNAME} -r lab09
-
-#скачиваем и распаковываем наш релиз
-$ wget https://github.com/${GITHUB_USERNAME}/lab09/releases/download/v0.1.0.0/${PACKAGE_FILENAME}
-
-$ tar -ztf ${PACKAGE_FILENAME}
-
-
-dgt20u186@dgt20u186-Lenovo-G50-45:~/dgt20u186/workspace/projects/lab09$ tar -ztf ${PACKAGE_FILENAME}
-print-0.1.0.0-Linux/lib/
-print-0.1.0.0-Linux/lib/libprint.a
-print-0.1.0.0-Linux/include/
-print-0.1.0.0-Linux/include/print.hpp
-print-0.1.0.0-Linux/bin/
-print-0.1.0.0-Linux/bin/demo
-print-0.1.0.0-Linux/cmake/
-print-0.1.0.0-Linux/cmake/print-config-noconfig.cmake
-print-0.1.0.0-Linux/cmake/print-config.cmake
+- [VirualBox](https://www.virtualbox.org/)
+- [Vagrant providers](https://github.com/hashicorp/vagrant/wiki/Available-Vagrant-Plugins#providers)
+- [Vagrant vbguest plugin](https://github.com/dotless-de/vagrant-vbguest)
+- [Vagrant disksize plugin](https://github.com/sprotheroe/vagrant-disksize)
+- [Vagrant vmware esxi plugin](https://github.com/josenk/vagrant-vmware-esxi)
 
 ```
-
+Copyright (c) 2015-2021 The ISC Authors
+```
